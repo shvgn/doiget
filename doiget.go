@@ -67,20 +67,20 @@ func GetDOI(doi string) (string, error) {
 	// 		", "))
 
 	resp, err := client.Do(req)
-
+	if err != nil {
+		return "", err
+	}
+	// fmt.Println("Responce content-type:", resp.Header.Get("contentType"))
 	// fmt.Println("Request headers:")
 	// for k, v := range req.Header {
 	// 	fmt.Println("-->", k, ": ", v)
 	// }
 	// fmt.Printf("Responce status code: %d\n", resp.StatusCode)
-	// for k, v := range resp.Header {
-	// 	fmt.Println("<--", k, ": ", v)
-	// }
+	for k, v := range resp.Header {
+		fmt.Println("<--", k, ": ", v)
+	}
 	// fmt.Println("Final URL:", resp.Request.URL.String())
 
-	if err != nil {
-		return "", err
-	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
