@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -15,7 +16,7 @@ const (
 )
 
 // GetDOI takes DOI spec and returns its metadata
-func GetDOI(doi string) (string, error) {
+func GetDOI(doi string) ([]byte, error) {
 	client := &http.Client{
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			if len(via) >= MAX_REDIRECTS {
@@ -29,46 +30,28 @@ func GetDOI(doi string) (string, error) {
 
 	req, err := http.NewRequest("GET", DOIURL+doi, nil)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	// req.Header.Add(HDR_ACCEPT, HDR_JSON2)
-	// req.Header.Add("Accept", "application/citeproc+json")
-	// req.Header.Add("Accept", "application/vnd.citationstyles.csl+json")
-	// req.Header.Add("Accept", "application/x-bibtex")
-	// req.Header.Add("Accept", "application/x-datacite+xml")
-	// req.Header.Add("Accept", "application/rdf+xml")
-	// req.Header.Add("Accept", "application/vnd.datacite.datacite+xml")
-	// req.Header.Add("Accept", "application/vnd.datacite.datacite+text")
-	// req.Header.Add("Accept", "application/x-datacite+text")
-	// req.Header.Add("Accept", "application/x-research-info-systems")
-	// req.Header.Add("Accept", "text/x-bibliography")
-	// req.Header.Add("Accept", "text/turtle")
-	// req.Header.Add("Accept", "text/html")
-
 	req.Header.Set("Accept", "application/citeproc+json")
-	req.Header.Set("Accept", "application/vnd.datacite.datacite+xml")
-	req.Header.Set("Accept", "application/vnd.citationstyles.csl+json")
-	//req.Header.Add("Accept",
-	//strings.Join([]string{
+	// req.Header.Set("Accept", "application/vnd.datacite.datacite+xml")
+	// req.Header.Set("Accept", "application/vnd.citationstyles.csl+json")
 	// "application/citeproc+json",
 	// "application/vnd.citationstyles.csl+json",
 	// "application/x-bibtex",
 	// "application/x-datacite+xml",
 	// "application/rdf+xml",
 	// "application/vnd.datacite.datacite+xml",
-	//"application/vnd.datacite.datacite+text",
-	//"application/x-datacite+text",
-	//"application/x-research-info-systems",
-	//"text/x-bibliography",
-	//"text/turtle",
-	//"text/html"
-	// 	},
-	// 		", "))
+	// "application/vnd.datacite.datacite+text",
+	// "application/x-datacite+text",
+	// "application/x-research-info-systems",
+	// "text/x-bibliography",
+	// "text/turtle",
+	// "text/html"
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	// fmt.Println("Responce content-type:", resp.Header.Get("contentType"))
 	// fmt.Println("Request headers:")
@@ -84,9 +67,9 @@ func GetDOI(doi string) (string, error) {
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	return string(body[:]), nil
+	return body, nil
 }
 
 func main() {
@@ -99,7 +82,33 @@ func main() {
 			log.Println("Error: ")
 			log.Println(err)
 		}
-		fmt.Println(body)
+
+		fmt.Println()
+
+		var papmeta Papmeta
+		err = json.Unmarshal(body, &papmeta)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Printf("%#v\n", papmeta)
+		for _, a := range papmeta.Author {
+			fmt.Printf("%#v\n", a)
+		}
+		fmt.Printf("%#v\n", papmeta.Created)
+		fmt.Printf("%#v\n", papmeta.Deposited)
+		fmt.Printf("%#v\n", papmeta.Indexed)
+
+		// var ppi interface{}
+		// err = json.Unmarshal(body, &ppi)
+		// if err != nil {
+		// 	log.Fatal(err)
+		// }
+		// fmt.Println(ppi)
+		// fmt.Printf("%#v\n\n", ppi)
+
+		fmt.Println()
+		fmt.Println(string(body[:]))
+
 		if arglen > 2 {
 			fmt.Println("-----------------------------------------------")
 		}
