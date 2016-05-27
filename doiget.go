@@ -11,16 +11,16 @@ import (
 )
 
 const (
-	MAX_REDIRECTS int    = 10
-	DOIURL        string = "http://dx.doi.org/"
+	maxRedirects int    = 10
+	ApiUrl       string = "http://dx.doi.org/"
 )
 
-// GetDOI takes DOI spec and returns its metadata
-func GetDOI(doi string) ([]byte, error) {
+// FetchMeta takes DOI spec and returns its metadata
+func FetchMeta(doi string) ([]byte, error) {
 	client := &http.Client{
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			if len(via) >= MAX_REDIRECTS {
-				msg := fmt.Sprintf("Stopped after %d redirects", MAX_REDIRECTS)
+			if len(via) >= maxRedirects {
+				msg := fmt.Sprintf("Stopped after %d redirects", maxRedirects)
 				return errors.New(msg)
 			}
 			// Move the 'Accept' header ahead
@@ -28,7 +28,7 @@ func GetDOI(doi string) ([]byte, error) {
 			return nil
 		}}
 
-	req, err := http.NewRequest("GET", DOIURL+doi, nil)
+	req, err := http.NewRequest("GET", ApiUrl+doi, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -75,9 +75,9 @@ func GetDOI(doi string) ([]byte, error) {
 func main() {
 	arglen := len(os.Args)
 	for _, doi := range os.Args[1:] {
-		fmt.Println("Processing " + DOIURL + doi)
+		fmt.Println("Processing " + ApiUrl + doi)
 
-		body, err := GetDOI(doi)
+		body, err := FetchMeta(doi)
 		if err != nil {
 			log.Println("Error: ")
 			log.Println(err)
@@ -85,18 +85,18 @@ func main() {
 
 		fmt.Println()
 
-		var papmeta Papmeta
-		err = json.Unmarshal(body, &papmeta)
+		var publication Publication
+		err = json.Unmarshal(body, &publication)
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Printf("%#v\n", papmeta)
-		for _, a := range papmeta.Author {
+		fmt.Printf("%#v\n", publication)
+		for _, a := range publication.Author {
 			fmt.Printf("%#v\n", a)
 		}
-		fmt.Printf("%#v\n", papmeta.Created)
-		fmt.Printf("%#v\n", papmeta.Deposited)
-		fmt.Printf("%#v\n", papmeta.Indexed)
+		fmt.Printf("%#v\n", publication.Created)
+		fmt.Printf("%#v\n", publication.Deposited)
+		fmt.Printf("%#v\n", publication.Indexed)
 
 		// var ppi interface{}
 		// err = json.Unmarshal(body, &ppi)

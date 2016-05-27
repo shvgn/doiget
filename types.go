@@ -2,7 +2,7 @@ package main
 
 import "fmt"
 
-// DateStruct is used in Papmeta
+// DateStruct is used in Publication
 type DateStruct struct {
 	DateParts [][]int `json:"date-parts"`
 	DateTime  string  `json:"date-time"`
@@ -21,7 +21,7 @@ func (a *Author) String() string {
 }
 
 // Paper metainformation struct contains most fields that come with responce JSON
-type Papmeta struct {
+type Publication struct {
 	DOI            string      `json:"DOI"`
 	ISSN           []string    `json:"ISSN"`
 	URL            string      `json:"URL"`
