@@ -11,8 +11,10 @@ import (
 )
 
 const (
-	maxRedirects int    = 10
-	ApiUrl       string = "http://dx.doi.org/"
+	maxRedirects int = 10
+
+	// APIURL is the URL of the DOI
+	APIURL string = "http://dx.doi.org/"
 )
 
 // FetchMeta takes DOI spec and returns its metadata
@@ -28,7 +30,7 @@ func FetchMeta(doi string) ([]byte, error) {
 			return nil
 		}}
 
-	req, err := http.NewRequest("GET", ApiUrl+doi, nil)
+	req, err := http.NewRequest("GET", APIURL+doi, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +77,7 @@ func FetchMeta(doi string) ([]byte, error) {
 func main() {
 	arglen := len(os.Args)
 	for _, doi := range os.Args[1:] {
-		fmt.Println("Processing " + ApiUrl + doi)
+		fmt.Println("Processing " + APIURL + doi)
 
 		body, err := FetchMeta(doi)
 		if err != nil {
